@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Art VICS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css?v=1.1">
+    <link rel="shortcut icon" href="assets/images/favicon.png">
+    
+    <style>
+        /* Estilos específicos para el Portal de Administración */
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            padding-bottom: 60px;
+        }
+
+        .admin-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        .admin-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-title-row h1 {
+            font-size: 2.2rem;
+        }
+
+        /* Tarjeta de estado de guardado */
+        .save-banner {
+            background: rgba(255, 145, 77, 0.15);
+            border: 1px solid var(--accent);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .save-banner.clean {
+            background: rgba(0, 200, 100, 0.1);
+            border-color: #00c864;
+        }
+
+        .save-status-info h4 {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .save-status-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .save-actions-btn {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00b050 0%, #00e070 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 176, 80, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 176, 80, 0.45);
+        }
+
+        /* Grid de Trabajo (Formulario e Historial) */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 0.8fr 1.2fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 992px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Panel/Tarjeta Glassmorphic */
+        .admin-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .admin-card-title {
+            font-size: 1.35rem;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Formulario */
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.25);
+        }
+
+        .form-help {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Tabla de Productos */
+        .products-table-container {
+            overflow-x: auto;
+        }
+
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .products-table th, .products-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.95rem;
+        }
+
+        .products-table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .table-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--glass-border);
+        }
+
+        .table-img-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .table-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: var(--accent-glow);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .table-price {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .table-category {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .btn-edit {
+            background: rgba(255, 222, 89, 0.15);
+            color: #ffde59;
+            border: 1px solid #ffde59;
+        }
+
+        .btn-edit:hover {
+            background: #ffde59;
+            color: #111;
+        }
+
+        .btn-delete {
+            background: rgba(255, 77, 77, 0.15);
+            color: #ff4d4d;
+            border: 1px solid #ff4d4d;
+        }
+
+        .btn-delete:hover {
+            background: #ff4d4d;
+            color: white;
+        }
+
+        /* Notificación Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            box-shadow: var(--shadow);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(150px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        .toast-icon {
+            font-size: 1.4rem;
+            color: #00c864;
+        }
+
+        .toast-text {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabecera del Administrador -->
+    <header class="admin-header">
+        <div class="admin-nav">
+            <a href="#" class="logo" style="pointer-events: none;">
+                <img src="assets/images/logo.png" alt="Art VICS Logo" class="logo-img">
+                <img src="assets/images/logo_text.png" alt="Art VICS" class="logo-text-img">
+                <span style="font-size: 0.9rem; font-weight: 400; color: var(--text-secondary); margin-left: 12px;">(Panel de Control)</span>
+            </a>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <a href="index.html" target="_blank" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Ver Sitio Web ↗</a>
+                <button id="themeToggle" class="theme-toggle" aria-label="Cambiar Tema">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                    </svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        
+        <!-- Barra de Guardar Cambios -->
+        <div id="saveBanner" class="save-banner clean">
+            <div class="save-status-info">
+                <h4 id="saveStatusTitle">Catálogo al día</h4>
+                <p id="saveStatusDesc">No hay cambios pendientes de guardar en js/products.js.</p>
+            </div>
+            <div class="save-actions-btn">
+                <button id="btnSaveApi" class="btn btn-primary" onclick="saveToLocalServer()">
+                    <span>Guardar en Servidor</span>
+                </button>
+                <button id="btnDownloadJs" class="btn btn-secondary" onclick="downloadProductsJs()">
+                    Descargar products.js
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-title-row">
+            <h1>Gestión del Catálogo</h1>
+        </div>
+
+        <!-- Área de Trabajo -->
+        <div class="admin-grid">
+            
+            <!-- Columna Formulario (Izquierda) -->
+            <div class="admin-card">
+                <h3 class="admin-card-title" id="formTitle">
+                    <span>Agregar Nuevo Producto</span>
+                    <button id="btnCancelEdit" class="btn-icon btn-delete" style="display: none; padding: 4px 10px; font-size: 0.75rem;" onclick="resetForm()">Cancelar Edición</button>
+                </h3>
+                
+                <form id="productForm" class="admin-form" onsubmit="handleFormSubmit(event)">
+                    <input type="hidden" id="editProductId">
+                    
+                    <div>
+                        <label class="form-label" for="prodTitle">Nombre del Producto *</label>
+                        <input type="text" id="prodTitle" class="form-input" required placeholder="Ej. Camiseta Oversize Anime">
+                    </div>
+                    
+                    <div class="form-row-2">
+                        <div>
+                            <label class="form-label" for="prodCategory">Categoría *</label>
+                            <select id="prodCategory" class="form-select" required onchange="handleCategoryChange()">
+                                <option value="textiles">Textiles & Camisetas</option>
+                                <option value="hoodies">Buzos & Hoodies</option>
+                                <option value="vasos">Vasos & Botilitos</option>
+                                <option value="agendas">Agendas & Llaveros</option>
+                                <option value="letreros">Cuadros & Letreros</option>
+                                <option value="tulas">Morrales & Tulas</option>
+                                <option value="infantil">Línea Infantil</option>
+                                <option value="publicidad">Publicidad & Logos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label" for="prodPrice">Precio ($ COP) *</label>
+                            <input type="number" id="prodPrice" class="form-input" required min="0" step="1000" placeholder="Ej. 35000">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label" for="prodImageFile">Foto del Producto</label>
+                        <input type="file" id="prodImageFile" class="form-input" accept="image/*" onchange="handleFileSelected(event)">
+                        <span class="form-help" id="imageFileHelp">Elige la foto del producto. El sistema usará su nombre de archivo automáticamente.</span>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="prodImagePath">Ruta de Imagen (Generada/Manual)</label>
+                        <input type="text" id="prodImagePath" class="form-input" placeholder="Ej. assets/images/products/textiles/foto.png">
+                        <span class="form-help">Si prefieres copiar la imagen manualmente, escribe su nombre de archivo aquí.</span>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div>
+                            <label class="form-label" for="prodBadge">Distintivo (Badge)</label>
+                            <select id="prodBadge" class="form-select">
+                                <option value="">Ninguno</option>
+                                <option value="Popular">Popular</option>
+                                <option value="Más Vendido">Más Vendido</option>
+                                <option value="Nuevo">Nuevo</option>
+                                <option value="Oferta">Oferta</option>
+                                <option value="Recomendado">Recomendado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label" for="prodType">Tipo Técnico (Auto)</label>
+                            <input type="text" id="prodType" class="form-input" readonly style="background: rgba(0,0,0,0.2); opacity: 0.7;">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label" for="prodDesc">Descripción corta *</label>
+                        <textarea id="prodDesc" class="form-textarea" rows="3" required placeholder="Ej. Camiseta fabricada en algodón premium de 180g, tacto ultra suave y estampado de alta duración."></textarea>
+                    </div>
+                    
+                    <button type="submit" id="btnSubmitForm" class="btn btn-primary" style="margin-top: 10px;">
+                        Agregar al Catálogo
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Columna Lista de Productos (Derecha) -->
+            <div class="admin-card">
+                <h3 class="admin-card-title">Listado de Productos del Catálogo (<span id="totalProductsSpan">0</span>)</h3>
+                
+                <div class="products-table-container">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>Foto</th>
+                                <th>Detalles del Producto</th>
+                                <th>Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Se rellena con JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Notificación Toast -->
+    <div id="toast" class="toast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-text" id="toastText">Operación realizada con éxito</span>
+    </div>
+
+    <!-- Cargar base de datos original -->
+    <script src="js/products.js"></script>
+    <script>
+        // Clonar base de datos local para manipulación
+        let activeDatabase = JSON.parse(JSON.stringify(PRODUCT_DATABASE));
+        let isDirty = false;
+        let isRunningOnServer = false;
+
+        // Comprobar si el portal corre en el servidor local de desarrollo (PowerShell)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            isRunningOnServer = true;
+            document.getElementById('btnSaveApi').style.display = 'inline-block';
+        } else {
+            isRunningOnServer = false;
+            document.getElementById('btnSaveApi').style.display = 'none';
+            document.getElementById('saveStatusTitle').innerText = 'Modo Remoto / Local (Sin Servidor)';
+            document.getElementById('saveStatusDesc').innerText = 'Para aplicar los cambios en tu sitio web de producción (GitHub Pages), pulsa "Descargar products.js" y arrastra el archivo descargado para reemplazar el de la carpeta "js/" de tu repositorio local.';
+            document.getElementById('saveBanner').classList.remove('clean');
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable();
+            handleCategoryChange(); // Para inicializar el tipo técnico
+            initializeTheme();
+            
+            const themeToggle = document.getElementById("themeToggle");
+            themeToggle.addEventListener("click", toggleTheme);
+        });
+
+        // Marcar cambios como pendientes
+        function setDirty() {
+            if (isRunningOnServer) {
+                isDirty = true;
+                const banner = document.getElementById('saveBanner');
+                banner.classList.remove('clean');
+                document.getElementById('saveStatusTitle').innerText = 'Cambios pendientes por guardar';
+                document.getElementById('saveStatusDesc').innerText = 'Tienes modificaciones en el catálogo. Pulsa "Guardar en Servidor" para aplicarlas.';
+            }
+        }
+
+        // Limpiar estado sucio
+        function setClean() {
+            if (isRunningOnServer) {
+                isDirty = false;
+                const banner = document.getElementById('saveBanner');
+                banner.classList.add('clean');
+                document.getElementById('saveStatusTitle').innerText = 'Catálogo al día';
+                document.getElementById('saveStatusDesc').innerText = 'No hay cambios pendientes de guardar en js/products.js.';
+            }
+        }
+
+        // Renderizar tabla de productos
+        function renderTable() {
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+            
+            document.getElementById('totalProductsSpan').innerText = activeDatabase.length;
+
+            activeDatabase.forEach((p, index) => {
+                const tr = document.createElement('tr');
+                
+                // Visualizador de imagen
+                let imageHTML = `<div class="table-img-placeholder">🎨</div>`;
+                if (p.image) {
+                    imageHTML = `<img src="${p.image}" alt="${p.title}" class="table-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="table-img-placeholder" style="display:none">🎨</div>`;
+                }
+
+                // Dar formato de categoría en español
+                const categoryNames = {
+                    textiles: "Textiles & Camisetas",
+                    hoodies: "Buzos & Hoodies",
+                    vasos: "Vasos & Botilitos",
+                    agendas: "Agendas & Llaveros",
+                    letreros: "Cuadros & Letreros",
+                    tulas: "Morrales & Tulas",
+                    infantil: "Línea Infantil",
+                    publicidad: "Publicidad & Logos"
+                };
+                const catSpan = categoryNames[p.category] || p.category;
+
+                tr.innerHTML = `
+                    <td>${imageHTML}</td>
+                    <td>
+                        <div style="font-weight:600; font-size:1.05rem;">${p.title}</div>
+                        <div class="table-category">${catSpan} ${p.badge ? `<span class="table-badge">${p.badge}</span>` : ''}</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary); max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top:4px;">${p.desc}</div>
+                    </td>
+                    <td><span class="table-price">$${p.price.toLocaleString('es-CO')}</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon btn-edit" onclick="editProduct('${p.id}')">Editar</button>
+                            <button class="btn-icon btn-delete" onclick="deleteProduct('${p.id}')">Eliminar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Manejar el cambio de categoría para auto-detectar el tipo técnico
+        function handleCategoryChange() {
+            const category = document.getElementById('prodCategory').value;
+            const title = document.getElementById('prodTitle').value;
+            const typeInput = document.getElementById('prodType');
+            
+            let type = "tshirt";
+            const titleLower = title.toLowerCase();
+            
+            if (category === "textiles") {
+                type = titleLower.includes("gorra") ? "cap" : "tshirt";
+            } else if (category === "hoodies") {
+                type = "hoodie";
+            } else if (category === "vasos") {
+                type = (titleLower.includes("termo") || titleLower.includes("botilito") || titleLower.includes("caramañola")) ? "bottle" : "mug";
+            } else if (category === "agendas") {
+                type = titleLower.includes("llavero") ? "key" : "book";
+            } else if (category === "letreros") {
+                type = (titleLower.includes("letrero") || titleLower.includes("neon")) ? "neon" : "frame";
+            } else if (category === "tulas") {
+                type = "bag";
+            } else if (category === "infantil") {
+                type = "baby";
+            } else if (category === "publicidad") {
+                type = "biz";
+            }
+            
+            typeInput.value = type;
+        }
+
+        // Escucha el input del nombre para actualizar el tipo
+        document.getElementById('prodTitle').addEventListener('input', handleCategoryChange);
+
+        // Cuando se selecciona un archivo (Se sube automáticamente si está corriendo el servidor)
+        function handleFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const category = document.getElementById('prodCategory').value;
+            
+            if (isRunningOnServer) {
+                showToast('Subiendo imagen al servidor local...');
+                
+                // Construimos la URL del endpoint de subida con los parámetros del archivo
+                const url = `/api/upload?category=${encodeURIComponent(category)}&filename=${encodeURIComponent(file.name)}`;
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': file.type
+                    },
+                    body: file // Enviamos el archivo binario completo directamente
+                })
+                .then(res => {
+                    if (res.ok) {
+                        return res.json();
+                    } else {
+                        throw new Error('Error del servidor al subir el archivo');
+                    }
+                })
+                .then(data => {
+                    // El servidor nos devuelve la ruta pública local
+                    document.getElementById('prodImagePath').value = data.path;
+                    showToast('¡Imagen subida y vinculada al producto con éxito!');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('No se pudo subir la imagen al servidor. Asegúrate de que el servidor local esté activo.');
+                });
+            } else {
+                // Modo manual (si abren el archivo html directo o en GitHub Pages)
+                const path = `assets/images/products/${category}/${file.name}`;
+                document.getElementById('prodImagePath').value = path;
+                showToast(`Ruta de imagen configurada a: ${path}. Recuerda copiar el archivo físicamente en esa carpeta.`);
+            }
+        }
+
+        // Reiniciar Formulario
+        function resetForm() {
+            document.getElementById('productForm').reset();
+            document.getElementById('editProductId').value = '';
+            document.getElementById('formTitle').firstElementChild.innerText = 'Agregar Nuevo Producto';
+            document.getElementById('btnSubmitForm').innerText = 'Agregar al Catálogo';
+            document.getElementById('btnCancelEdit').style.display = 'none';
+            handleCategoryChange();
+        }
+
+        // Envío de Formulario (Creación o Edición)
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const editId = document.getElementById('editProductId').value;
+            const title = document.getElementById('prodTitle').value.trim();
+            const category = document.getElementById('prodCategory').value;
+            const price = parseInt(document.getElementById('prodPrice').value);
+            const imagePath = document.getElementById('prodImagePath').value.trim();
+            const desc = document.getElementById('prodDesc').value.trim();
+            const badge = document.getElementById('prodBadge').value;
+            const type = document.getElementById('prodType').value;
+
+            // Generar ID limpio
+            const cleanId = title.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+                .replace(/[^a-z0-9]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            const productId = editId ? editId : `${category}-${cleanId}`;
+
+            // Opciones predeterminadas según el tipo
+            let options = null;
+            if (type === "tshirt" || type === "hoodie") {
+                options = { talla: ['S', 'M', 'L', 'XL'], tecnica: ['Estampado DTF', 'Bordado Premium'] };
+            } else if (type === "cap") {
+                options = { color: ['Negra', 'Azul', 'Blanca', 'Roja'], tecnica: ['Bordado Computarizado', 'Estampado Flex'] };
+            } else if (type === "mug") {
+                options = { diseño: ['Foto Personalizada', 'Frase Especial', 'Logo Corporativo'] };
+            } else if (type === "bottle") {
+                options = { color: ['Negro Mate', 'Azul', 'Plateado', 'Rojo'], diseño: ['Grabado Láser', 'Estampado DTF UV'] };
+            } else if (type === "book") {
+                options = { tamaño: ['A5 (Mediana)', 'A6 (Pequeña)'] };
+            } else if (type === "key") {
+                options = { forma: ['Rectangular', 'Circular', 'Corazón'] };
+            } else if (type === "baby") {
+                options = { talla: ['0-3 Meses', '3-6 Meses', '6-12 Meses'], color: ['Blanco', 'Rosado', 'Azul Pastel'] };
+            }
+
+            const productData = {
+                id: productId,
+                title: title,
+                category: category,
+                price: price,
+                image: imagePath || null,
+                desc: desc,
+                type: type
+            };
+
+            if (badge) productData.badge = badge;
+            if (options) productData.options = options;
+
+            if (editId) {
+                // Modo Edición: Reemplazar elemento
+                const idx = activeDatabase.findIndex(p => p.id === editId);
+                if (idx !== -1) {
+                    activeDatabase[idx] = productData;
+                    showToast('Producto actualizado correctamente');
+                }
+            } else {
+                // Modo Creación: Añadir nuevo
+                // Validar que el ID no exista
+                if (activeDatabase.some(p => p.id === productId)) {
+                    alert('Ya existe un producto con un nombre muy similar en esta categoría.');
+                    return;
+                }
+                activeDatabase.push(productData);
+                showToast('Producto agregado al catálogo');
+            }
+
+            setDirty();
+            renderTable();
+            resetForm();
+        }
+
+        // Cargar producto al formulario para editar
+        function editProduct(id) {
+            const p = activeDatabase.find(prod => prod.id === id);
+            if (!p) return;
+
+            document.getElementById('editProductId').value = p.id;
+            document.getElementById('prodTitle').value = p.title;
+            document.getElementById('prodCategory').value = p.category;
+            document.getElementById('prodPrice').value = p.price;
+            document.getElementById('prodImagePath').value = p.image || '';
+            document.getElementById('prodDesc').value = p.desc;
+            document.getElementById('prodBadge').value = p.badge || '';
+            document.getElementById('prodType').value = p.type;
+
+            document.getElementById('formTitle').firstElementChild.innerText = 'Editar Producto';
+            document.getElementById('btnSubmitForm').innerText = 'Actualizar Producto';
+            document.getElementById('btnCancelEdit').style.display = 'block';
+
+            // Scroll suave hacia el formulario
+            document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Eliminar producto de la base de datos
+        function deleteProduct(id) {
+            const p = activeDatabase.find(prod => prod.id === id);
+            if (!p) return;
+
+            if (confirm(`¿Estás seguro de que deseas eliminar "${p.title}" del catálogo?`)) {
+                activeDatabase = activeDatabase.filter(prod => prod.id !== id);
+                setDirty();
+                renderTable();
+                showToast('Producto eliminado del catálogo');
+                
+                // Si se estaba editando este producto, limpiar formulario
+                if (document.getElementById('editProductId').value === id) {
+                    resetForm();
+                }
+            }
+        }
+
+        // Generar el código de products.js
+        function generateJsContent() {
+            let entries = [];
+            activeDatabase.forEach(p => {
+                let badgeStr = p.badge ? `badge: "${p.badge}",` : '';
+                let optionsStr = '';
+                if (p.options) {
+                    optionsStr = `options: ${JSON.stringify(p.options)},`;
+                }
+
+                let entry = `    {
+        id: "${p.id}",
+        title: "${p.title.replace(/"/g, '\\"')}",
+        category: "${p.category}",
+        price: ${p.price},
+        image: ${p.image ? `"${p.image}"` : 'null'},
+        desc: "${p.desc.replace(/"/g, '\\"')}",
+        ${badgeStr ? badgeStr + '\n        ' : ''}${optionsStr ? optionsStr + '\n        ' : ''}type: "${p.type}"
+    }`;
+                entries.push(entry);
+            });
+
+            return `// ==========================================================================
+// BASE DE DATOS DE PRODUCTOS - ACTUALIZADA POR EL PORTAL
+// ==========================================================================
+
+const PRODUCT_DATABASE = [
+${entries.join(',\n')}
+];
+`;
+        }
+
+        // Descargar el archivo products.js (Modo Manual)
+        function downloadProductsJs() {
+            const content = generateJsContent();
+            const blob = new Blob([content], { type: 'text/javascript;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'products.js');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast('Archivo products.js descargado. Recuerda reemplazarlo en js/');
+        }
+
+        // Guardar cambios a través del servidor local (Modo Automático)
+        function saveToLocalServer() {
+            if (!isRunningOnServer) return;
+
+            const content = generateJsContent();
+            
+            // Animación en el botón
+            const btn = document.getElementById('btnSaveApi');
+            const originalText = btn.firstElementChild.innerText;
+            btn.firstElementChild.innerText = 'Guardando...';
+            btn.disabled = true;
+
+            fetch('/api/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: content })
+            })
+            .then(res => {
+                if (res.ok) {
+                    showToast('¡Base de datos guardada con éxito en el servidor!');
+                    setClean();
+                } else {
+                    alert('Error al guardar en el servidor. Intenta de nuevo.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('No se pudo conectar con el servidor de guardado. ¿Está corriendo iniciar_portal.bat?');
+            })
+            .finally(() => {
+                btn.firstElementChild.innerText = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        // Toast de Notificación
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // Manejo de Temas (Claro / Oscuro)
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem("artvics_theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("data-theme", savedTheme);
+            } else {
+                const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                document.documentElement.setAttribute("data-theme", prefersDark ? "dark" : "light");
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("artvics_theme", newTheme);
+        }
+    </script>
+</body>
+</html>
